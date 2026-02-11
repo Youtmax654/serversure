@@ -12,7 +12,7 @@ const int ALERT_VALUE = 50;
 
 // Time between two alerts (in milliseconds)
 // 5000ms = 5 seconds. Change this value to adjust the delay.
-const unsigned long ALERT_COOLDOWN = 10000; 
+const unsigned long ALERT_COOLDOWN = 5000; 
 
 // --- OBJECTS ---
 WiFiClient espClient;
@@ -100,6 +100,4 @@ void loop()
         Serial.println("Alert detected but suppressed (Cooldown active)");
     }
   }
-
-  delay(250); // Small delay for sensor stability
 }
