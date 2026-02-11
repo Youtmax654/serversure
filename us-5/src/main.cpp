@@ -2,24 +2,32 @@
 #include "Ultrasonic.h"
 #include <PubSubClient.h>
 
+// --- CONFIGURATION ---
 const char *ssid = "rpi-serversure";
 const char *password = "lc9dAcDY4J";
-
 const char *mqtt_server = "10.42.0.1";
 
-const int ALERT_VALUE = 50;
+// Distance threshold (cm)
+const int ALERT_VALUE = 50; 
 
+// Time between two alerts (in milliseconds)
+// 5000ms = 5 seconds. Change this value to adjust the delay.
+const unsigned long ALERT_COOLDOWN = 10000; 
+
+// --- OBJECTS ---
 WiFiClient espClient;
 PubSubClient client(espClient);
-
 Ultrasonic ultrasonic(4);
+
+// --- VARIABLES ---
+unsigned long lastAlertTime = 0; // Tracks the last time we sent an alert
 
 void setup()
 {
   Serial.begin(115200);
   delay(1000);
 
-  WiFi.mode(WIFI_STA); // Optional
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.println("\nConnecting");
 
@@ -38,20 +46,18 @@ void setup()
 
 void reconnect()
 {
-  // Boucle jusqu'à la reconnexion
   while (!client.connected())
   {
-    Serial.print("Tentative de connexion MQTT...");
-    // ID Client unique requis
+    Serial.print("Attempting MQTT connection...");
     if (client.connect("ESP32_Security_Ultrason"))
     {
-      Serial.println("Connecté !");
+      Serial.println("Connected!");
     }
     else
     {
-      Serial.print("Echec, rc=");
+      Serial.print("Failed, rc=");
       Serial.print(client.state());
-      Serial.println(" nouvel essai dans 5s");
+      Serial.println(" try again in 5s");
       delay(5000);
     }
   }
@@ -65,18 +71,35 @@ void loop()
   }
   client.loop();
 
+  // 1. Measure distance
   long RangeInCentimeters = ultrasonic.MeasureInCentimeters();
 
-  Serial.print("The distance of obstacles in front is: ");
+  Serial.print("Distance: ");
   Serial.print(RangeInCentimeters);
   Serial.println(" cm");
 
+  // 2. Alert Logic with Cooldown
+  // If object is close AND enough time has passed since last alert
   if (RangeInCentimeters > 0 && RangeInCentimeters < ALERT_VALUE)
   {
-    Serial.print("ALERT");
+    unsigned long now = millis(); // Get current time
 
-    client.publish("salle/mouvement", "ALERTE");
+    if (now - lastAlertTime > ALERT_COOLDOWN) 
+    {
+      Serial.println(">>> TRIGGER: SENDING ALERT <<<");
+      
+      // Send the alert
+      // Note: Ensure your Python script listens to THIS specific topic
+      client.publish("salle/mouvement", "ALERTE"); 
+      
+      // Update the last alert time
+      lastAlertTime = now;
+    }
+    else 
+    {
+        Serial.println("Alert detected but suppressed (Cooldown active)");
+    }
   }
 
-  delay(250);
+  delay(250); // Small delay for sensor stability
 }
