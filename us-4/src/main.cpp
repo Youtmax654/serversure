@@ -8,6 +8,7 @@
 // --- CONFIGURATION MATERIEL ---
 #define DHTTYPE DHT11
 #define DHTPIN 2
+#define LDRPIN A0 // Light Dependent Resistor on analog pin A0
 
 // --- CONFIGURATION RESEAU ---
 byte mac[] = {0x90, 0xA2, 0xDA, 0x10, 0xDD, 0xF9};
@@ -114,22 +115,33 @@ void loop()
 
     float temp_hum_val[2] = {0};
 
+    // Read LDR value and convert to lux
+    int ldrValue = analogRead(LDRPIN);
+    // Calibrate these values based on your LDR and lighting conditions
+    // Typical: dark = ~1023, bright = ~0 (inverse relationship)
+    int lightLux = map(ldrValue, 0, 1023, 0, 10000); // maps to 0-10000 lux
+
     // Lecture du capteur
     if (!dht.readTempAndHumidity(temp_hum_val))
     {
-      float humidity = temp_hum_val[0];
-      float temperature = temp_hum_val[1];
+      int humidity = temp_hum_val[0];
+      int temperature = temp_hum_val[1];
 
-      // --- A. Mise à jour de l'écran LCD ---
-      lcd.clear();
+      // Display light level and temperature on LCD
       lcd.setCursor(0, 0);
-      lcd.print("Hum: ");
+      lcd.print("Lum: ");
+      lcd.print(lightLux);
+      lcd.print(" lux");
+
+      lcd.setCursor(0, 1);
+      lcd.print("T: ");
+      lcd.print(temperature);
+      lcd.print("*C");
+
+      lcd.setCursor(8, 1);
+      lcd.print("H: ");
       lcd.print(humidity);
       lcd.print("%");
-      lcd.setCursor(0, 1);
-      lcd.print("Tem: ");
-      lcd.print(temperature);
-      lcd.print("C");
 
       // --- B. Envoi MQTT (JSON) ---
       // On construit le message : {"temp": 24.0, "hum": 50.0}
@@ -137,6 +149,8 @@ void loop()
       payload += temperature;
       payload += ", \"hum\":";
       payload += humidity;
+      payload += ", \"lux\":";
+      payload += lightLux;
       payload += "}";
 
       // Conversion en tableau de char pour la librairie MQTT

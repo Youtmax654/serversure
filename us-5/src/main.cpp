@@ -82,24 +82,11 @@ void loop()
   // If object is close AND enough time has passed since last alert
   if (RangeInCentimeters > 0 && RangeInCentimeters < ALERT_VALUE)
   {
-    unsigned long now = millis(); // Get current time
-
-    if (now - lastAlertTime > ALERT_COOLDOWN) 
-    {
-      Serial.println(">>> TRIGGER: SENDING ALERT <<<");
-      
-      // Send the alert
-      // Note: Ensure your Python script listens to THIS specific topic
-      client.publish("salle/mouvement", "ALERTE"); 
-      
-      // Update the last alert time
-      lastAlertTime = now;
-    }
-    else 
-    {
-        Serial.println("Alert detected but suppressed (Cooldown active)");
-    }
+    Serial.println(">>> TRIGGER: SENDING ALERT <<<");
+    client.publish("salle/mouvement", "ALERTE"); 
+  } else {
+    client.publish("salle/mouvement", "OK");
   }
 
-  delay(250); // Small delay for sensor stability
+  delay(10000); // Small delay for sensor stability
 }
