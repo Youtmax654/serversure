@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 
 export const useMetrics = (ipAddress) => {
     const DEFAULT_IP = "localhost"
-    const protocol = ipAddress.includes('http') ? '' : 'http://'
-    const baseUrl = `${protocol}${ipAddress || DEFAULT_IP}:8000`
 
     const [last, setLast] = useState(null)
     const [history, setHistory] = useState([])
@@ -13,17 +11,20 @@ export const useMetrics = (ipAddress) => {
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
-            console.log(`Fetching from ${baseUrl}`)
-            const [lastRes, histRes, alertsRes] = await Promise.all([
-                axios.get(`${baseUrl}/api/sensors/last`),
-                axios.get(`${baseUrl}/api/sensors/history?limit=20`),
-                axios.get(`${baseUrl}/api/alerts`),
+            console.log(`Fetching`)
+            const [lastRes,
+                histRes,
+                alertsRes
+            ] = await Promise.all([
+                axios.get(`/api/sensors/last`),
+                axios.get(`/api/sensors/history?limit=20`),
+                axios.get(`/api/alerts`),
             ])
 
             setLast(lastRes.data)
-            setHistory(histRes.data)
+            setHistory(histRes.data.measurements)
             setAlerts(alertsRes.data)
 
             // Attempt to infer photos from alerts or fetch separate endpoint if exists
@@ -32,17 +33,18 @@ export const useMetrics = (ipAddress) => {
             try {
                 // This endpoint is speculative based on common patterns, but not mandated by user
                 // We will default to empty array if 404
-                const photoRes = await axios.get(`${baseUrl}/api/photos`)
-                setPhotos(photoRes.data)
-            } catch (e) {
+                const photoRes = await axios.get(`/api/photos`)
+                setPhotos(photoRes.data.photos)
+            } catch {
                 // Fallback: If alerts have photos, extract them
-                const alertPhotos = alertsRes.data
-                    .filter(a => a.photo || a.filename || a.image)
-                    .map(a => a.photo || a.filename || a.image)
+                // const alertPhotos = alertsRes.data
+                //     .filter(a => a.photo || a.filename || a.image)
+                //     .map(a => a.photo || a.filename || a.image)
 
                 // If alert object has no photo field, we might need another strategy.
                 // But let's leave empty for now if no endpoint.
-                setPhotos(alertPhotos)
+                // setPhotos(alertPhotos)
+                console.error("No photos")
             }
 
             setError(null)
@@ -71,7 +73,7 @@ export const useMetrics = (ipAddress) => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [last])
 
     useEffect(() => {
         fetchData() // Initial fetch

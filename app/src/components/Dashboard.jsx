@@ -167,31 +167,9 @@ const Dashboard = ({ ipAddress }) => {
                                     <Text mt={3} fontSize="sm" fontWeight="medium">System Secure</Text>
                                 </Flex>
                             ) : (
-                                alerts.map((alert, idx) => (
-                                    <Box
-                                        key={idx}
-                                        p={4}
-                                        bg={idx === 0 ? "red.50" : "transparent"}
-                                        borderLeft="3px solid"
-                                        borderColor={idx === 0 ? "red.400" : "transparent"}
-                                        borderRadius={idx === 0 ? "lg" : "none"}
-                                        mb={idx === 0 ? 2 : 0}
-                                        transition="all 0.2s"
-                                        _hover={{ bg: "gray.50" }}
-                                    >
-                                        <Flex justify="space-between" mb={1}>
-                                            <Text fontWeight={idx === 0 ? "bold" : "medium"} color={idx === 0 ? "red.600" : "gray.700"} fontSize="sm">
-                                                {alert.type || "INTRUSION"}
-                                            </Text>
-                                            <Text fontSize="xs" color="gray.400">
-                                                {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </Text>
-                                        </Flex>
-                                        <Text fontSize="xs" color="gray.500">
-                                            Detected at <Text as="span" fontWeight="bold" color="gray.700">{alert.distance}cm</Text>
-                                        </Text>
-                                    </Box>
-                                ))
+                                <div>
+                                    test
+                                </div>
                             )}
                         </Stack>
                     </Box>
@@ -209,11 +187,6 @@ const Dashboard = ({ ipAddress }) => {
                     </Flex>
                     <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={6} gap={4}>
                         {photos.slice(0, 4).map((photo, i) => {
-                            const filename = photo.filename || photo
-                            const imgSrc = filename.startsWith('http')
-                                ? filename
-                                : `${ipAddress.includes('http') ? ipAddress : 'http://' + ipAddress}:8000/photos/${filename}`
-
                             return (
                                 <Box
                                     key={i}
@@ -228,7 +201,7 @@ const Dashboard = ({ ipAddress }) => {
                                     _hover={{ transform: 'translateY(-4px)', boxShadow: 'lg' }}
                                 >
                                     <Image
-                                        src={imgSrc}
+                                        src={photo.url}
                                         alt="Intrusion"
                                         objectFit="cover"
                                         w="100%"

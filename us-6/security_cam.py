@@ -7,7 +7,7 @@ from datetime import datetime
 # --- CONFIGURATION ---
 MQTT_BROKER = "localhost"
 MQTT_TOPIC = "salle/mouvement"
-PHOTO_DIR = "/home/admin/surveillance_photos"
+PHOTO_DIR = "/home/traps/Scripts/dashboard/surveillance_photos"
 
 # Create directory if it doesn't exist
 if not os.path.exists(PHOTO_DIR):

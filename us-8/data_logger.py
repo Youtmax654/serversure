@@ -6,7 +6,7 @@ from datetime import datetime
 
 # --- CONFIGURATION ---
 MQTT_BROKER = "localhost"
-DB_NAME = "surveillance.db"
+DB_NAME = "dashboard/surveillance.db"
 
 # Topics to listen to
 TOPIC_SENSORS = "salle/sensors"   # From Arduino

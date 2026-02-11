@@ -202,13 +202,13 @@ const API_BASE = 'http://192.168.1.100:8000';
 
 // Get latest measurement
 const getLatestMeasurement = async () => {
-  const response = await axios.get(`${API_BASE}/api/sensors/last`);
+  const response = await axios.get(`/api/sensors/last`);
   return response.data;
 };
 
 // Get measurement history
 const getMeasurementHistory = async (limit = 50) => {
-  const response = await axios.get(`${API_BASE}/api/sensors/history`, {
+  const response = await axios.get(`/api/sensors/history`, {
     params: { limit }
   });
   return response.data;
@@ -216,7 +216,7 @@ const getMeasurementHistory = async (limit = 50) => {
 
 // Get alerts
 const getAlerts = async (limit = 20) => {
-  const response = await axios.get(`${API_BASE}/api/alerts`, {
+  const response = await axios.get(`/api/alerts`, {
     params: { limit }
   });
   return response.data;
