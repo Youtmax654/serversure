@@ -25,7 +25,7 @@ export const useMetrics = (ipAddress) => {
 
             setLast(lastRes.data)
             setHistory(histRes.data.measurements)
-            setAlerts(alertsRes.data)
+            setAlerts(alertsRes.data.alerts)
 
             // Attempt to infer photos from alerts or fetch separate endpoint if exists
             // Assuming alerts might contain photo filenames, or we fetch /api/photos

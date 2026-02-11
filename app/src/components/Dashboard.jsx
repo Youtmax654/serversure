@@ -58,7 +58,16 @@ const Dashboard = ({ ipAddress }) => {
     return (
         <Box>
             {/* Metrics Row */}
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} mb={10} gap={4}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8} mb={10} gap={4}>
+                <MetricCard
+                    title="SYSTEM STATUS"
+                    value={alerts.length > 0 || isTempCritical ? 'ALERT' : 'OK'}
+                    unit=""
+                    icon={alerts.length > 0 || isTempCritical ? AlertTriangle : Activity}
+                    color={alerts.length > 0 || isTempCritical ? "#e53e3e" : "#38a169"} // Red or Green
+                    bgGradient={alerts.length > 0 || isTempCritical ? "linear(to-br, red.200, pink.200)" : "linear(to-br, green.200, teal.200)"}
+                    isCritical={alerts.length > 0 || isTempCritical}
+                />
                 <MetricCard
                     title="TEMPERATURE"
                     value={last?.temperature?.toFixed(1) || '--'}
@@ -167,73 +176,107 @@ const Dashboard = ({ ipAddress }) => {
                                     <Text mt={3} fontSize="sm" fontWeight="medium">System Secure</Text>
                                 </Flex>
                             ) : (
-                                <div>
-                                    test
-                                </div>
+                                <Stack spacing={4}>
+                                    {alerts.map((alert, idx) => (
+                                        <Flex key={idx} p={3} bg="red.50" borderRadius="xl" justify="space-between" align="center" borderLeft="4px solid" borderColor="red.400">
+                                            <Flex align="center" gap={3}>
+                                                <Box color="red.500">
+                                                    <AlertTriangle size={18} />
+                                                </Box>
+                                                <Box>
+                                                    <Text fontSize="sm" fontWeight="bold" color="gray.700">
+                                                        {alert.alert_type.replace(/_/g, " ")}
+                                                    </Text>
+                                                    <Text fontSize="xs" color="gray.500">
+                                                        {new Date(alert.timestamp).toLocaleTimeString()} · Value: {alert.value}
+                                                    </Text>
+                                                </Box>
+                                            </Flex>
+                                        </Flex>
+                                    ))}
+                                </Stack>
                             )}
                         </Stack>
                     </Box>
                 </GridItem>
             </Grid>
 
-            {/* Photo Gallery Logic - Only show if photos exist */}
-            {photos.length > 0 && (
-                <Box mb={10}>
-                    <Flex align="center" gap={3} mb={6}>
-                        <Box p={2} bg="purple.50" borderRadius="lg" color="purple.500">
-                            <Camera size={24} />
-                        </Box>
-                        <Heading size="lg" color="gray.700">Latest Captures</Heading>
-                    </Flex>
-                    <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={6} gap={4}>
-                        {photos.slice(0, 4).map((photo, i) => {
-                            return (
+            {/* Photo Gallery Logic - Always shown with placeholders if empty */}
+            <Box mb={10} bg="white" borderRadius="2xl" borderWidth="1px" borderColor="gray.100" boxShadow="sm" p={6}>
+                <Flex align="center" gap={3} mb={6}>
+                    <Box p={2} bg="purple.50" borderRadius="lg" color="purple.500">
+                        <Camera size={24} />
+                    </Box>
+                    <Heading size="lg" color="gray.700">Latest Captures</Heading>
+                </Flex>
+                <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={6} gap={4}>
+                    {photos.length > 0 ? (
+                        photos.slice(0, 4).map((photo, i) => (
+                            <Box
+                                key={i}
+                                bg="white"
+                                borderRadius="2xl"
+                                overflow="hidden"
+                                boxShadow="sm"
+                                position="relative"
+                                role="group"
+                                cursor="pointer"
+                                transition="all 0.3s"
+                                _hover={{ transform: 'translateY(-4px)', boxShadow: 'lg' }}
+                            >
+                                <Image
+                                    src={photo.url}
+                                    alt="Intrusion"
+                                    objectFit="cover"
+                                    w="100%"
+                                    h="220px"
+                                    filter="grayscale(20%)"
+                                    transition="all 0.5s"
+                                    _groupHover={{ filter: "grayscale(0%)", transform: "scale(1.05)" }}
+                                />
                                 <Box
-                                    key={i}
-                                    bg="white"
-                                    borderRadius="2xl"
-                                    overflow="hidden"
-                                    boxShadow="sm"
-                                    position="relative"
-                                    role="group"
-                                    cursor="pointer"
-                                    transition="all 0.3s"
-                                    _hover={{ transform: 'translateY(-4px)', boxShadow: 'lg' }}
+                                    position="absolute"
+                                    bottom="0"
+                                    left="0"
+                                    right="0"
+                                    bgGradient="linear(to-t, blackAlpha.800, transparent)"
+                                    p={4}
+                                    pt={12}
                                 >
-                                    <Image
-                                        src={photo.url}
-                                        alt="Intrusion"
-                                        objectFit="cover"
-                                        w="100%"
-                                        h="220px"
-                                        filter="grayscale(20%)"
-                                        transition="all 0.5s"
-                                        _groupHover={{ filter: "grayscale(0%)", transform: "scale(1.05)" }}
-                                    />
-                                    <Box
-                                        position="absolute"
-                                        bottom="0"
-                                        left="0"
-                                        right="0"
-                                        bgGradient="linear(to-t, blackAlpha.800, transparent)"
-                                        p={4}
-                                        pt={12}
-                                    >
-                                        <Flex justify="space-between" align="end">
-                                            <Text fontSize="xs" color="whiteAlpha.900" fontWeight="medium">
-                                                CAM_0{i + 1}
-                                            </Text>
-                                            <Text fontSize="xs" color="whiteAlpha.700">
-                                                {new Date().toLocaleDateString()}
-                                            </Text>
-                                        </Flex>
-                                    </Box>
+                                    <Flex justify="space-between" align="end">
+                                        <Text fontSize="xs" color="whiteAlpha.900" fontWeight="medium">
+                                            CAM_0{i + 1}
+                                        </Text>
+                                        <Text fontSize="xs" color="whiteAlpha.700">
+                                            {new Date().toLocaleDateString()}
+                                        </Text>
+                                    </Flex>
                                 </Box>
-                            )
-                        })}
-                    </SimpleGrid>
-                </Box>
-            )}
+                            </Box>
+                        ))
+                    ) : (
+                        // Placeholders when no photos
+                        [1, 2, 3, 4].map((_, i) => (
+                            <Box
+                                key={i}
+                                h="220px"
+                                bg="gray.50"
+                                borderRadius="2xl"
+                                border="2px dashed"
+                                borderColor="gray.200"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                flexDirection="column"
+                                color="gray.400"
+                            >
+                                <Camera size={32} opacity={0.3} />
+                                <Text mt={2} fontSize="sm" fontWeight="medium">No Signal</Text>
+                            </Box>
+                        ))
+                    )}
+                </SimpleGrid>
+            </Box>
         </Box>
     )
 }
