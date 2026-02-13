@@ -41,7 +41,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   String message = "";
   for (int i = 0; i < length; i++) { message += (char)payload[i]; }
 
-  if (message == "ALERTE") {
+  // Check if the JSON contains "status": "ALERT"
+  if (message.indexOf("\"status\": \"ALERT\"") >= 0) {
     lcd.setRGB(255, 0, 0); 
     for(int i = 0; i < 3; i++) {
       digitalWrite(LED, HIGH);
@@ -54,6 +55,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     lcd.setRGB(colorR, colorG, colorB); 
   }
 }
+
 
 // --- RECONNECT ---
 void reconnect() {
