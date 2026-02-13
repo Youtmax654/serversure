@@ -48,6 +48,15 @@ const Dashboard = ({ ipAddress }) => {
     }
 
     const isTempCritical = last?.temperature > 30
+    const isHumidityCritical = last?.humidity > 70
+
+    const lastAlert = alerts.length > 0 ? alerts[0] : null // Alerts are ordered DESC (newest first)
+    const isSystemCritical = (lastAlert?.alert_type === 'ALERT' || lastAlert?.alert_type === 'ALERTE') || isTempCritical || isHumidityCritical
+
+    const systemStatus = isSystemCritical ? 'ALERT' : 'OK'
+    const statusColor = isSystemCritical ? "#e53e3e" : "#38a169"
+    const statusGradient = isSystemCritical ? "linear(to-br, red.200, pink.200)" : "linear(to-br, green.200, teal.200)"
+    const StatusIcon = isSystemCritical ? AlertTriangle : Activity
 
     // Format history for graph logic 
     const chartData = [...history].reverse().map(h => ({
@@ -61,12 +70,12 @@ const Dashboard = ({ ipAddress }) => {
             <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8} mb={10} gap={4}>
                 <MetricCard
                     title="SYSTEM STATUS"
-                    value={alerts.length > 0 || isTempCritical ? 'ALERT' : 'OK'}
+                    value={systemStatus}
                     unit=""
-                    icon={alerts.length > 0 || isTempCritical ? AlertTriangle : Activity}
-                    color={alerts.length > 0 || isTempCritical ? "#e53e3e" : "#38a169"} // Red or Green
-                    bgGradient={alerts.length > 0 || isTempCritical ? "linear(to-br, red.200, pink.200)" : "linear(to-br, green.200, teal.200)"}
-                    isCritical={alerts.length > 0 || isTempCritical}
+                    icon={StatusIcon}
+                    color={statusColor}
+                    bgGradient={statusGradient}
+                    isCritical={isSystemCritical}
                 />
                 <MetricCard
                     title="TEMPERATURE"
@@ -82,8 +91,9 @@ const Dashboard = ({ ipAddress }) => {
                     value={last?.humidity?.toFixed(0) || '--'}
                     unit="%"
                     icon={Droplets}
-                    color="#3182ce" // Blue
-                    bgGradient="linear(to-br, cyan.200, blue.200)"
+                    color={isHumidityCritical ? "#e53e3e" : "#3182ce"}
+                    bgGradient={isHumidityCritical ? "linear(to-br, orange.200, red.200)" : "linear(to-br, cyan.200, blue.200)"}
+                    isCritical={isHumidityCritical}
                 />
                 <MetricCard
                     title="LUMINOSITY"
@@ -177,23 +187,26 @@ const Dashboard = ({ ipAddress }) => {
                                 </Flex>
                             ) : (
                                 <Stack spacing={4}>
-                                    {alerts.map((alert, idx) => (
-                                        <Flex key={idx} p={3} bg="red.50" borderRadius="xl" justify="space-between" align="center" borderLeft="4px solid" borderColor="red.400">
-                                            <Flex align="center" gap={3}>
-                                                <Box color="red.500">
-                                                    <AlertTriangle size={18} />
-                                                </Box>
-                                                <Box>
-                                                    <Text fontSize="sm" fontWeight="bold" color="gray.700">
-                                                        {alert.alert_type.replace(/_/g, " ")}
-                                                    </Text>
-                                                    <Text fontSize="xs" color="gray.500">
-                                                        {new Date(alert.timestamp).toLocaleTimeString()} · Value: {alert.value}
-                                                    </Text>
-                                                </Box>
+                                    {alerts.map((alert, idx) => {
+                                        const isAlert = alert.alert_type === 'ALERT' || alert.alert_type === 'ALERTE'
+                                        return (
+                                            <Flex key={idx} p={3} bg={isAlert ? "red.50" : "green.50"} borderRadius="xl" justify="space-between" align="center" borderLeft="4px solid" borderColor={isAlert ? "red.400" : "green.400"}>
+                                                <Flex align="center" gap={3}>
+                                                    <Box color={isAlert ? "red.500" : "green.500"}>
+                                                        <AlertTriangle size={18} />
+                                                    </Box>
+                                                    <Box>
+                                                        <Text fontSize="sm" fontWeight="bold" color="gray.700">
+                                                            {alert.alert_type.replace(/_/g, " ")}
+                                                        </Text>
+                                                        <Text fontSize="xs" color="gray.500">
+                                                            {new Date(alert.timestamp).toLocaleTimeString()} · Value: {alert.value} {alert.value ? 'cm' : ''}
+                                                        </Text>
+                                                    </Box>
+                                                </Flex>
                                             </Flex>
-                                        </Flex>
-                                    ))}
+                                        )
+                                    })}
                                 </Stack>
                             )}
                         </Stack>

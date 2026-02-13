@@ -67,12 +67,11 @@ def on_message(client, userdata, msg):
             
             # We check if temp and lux are present. 
             # Humidity is optional (if your sensor fails, it records None)
-            if temp is not None:
-                cursor.execute(
-                    "INSERT INTO measurements (temperature, humidity, luminosity) VALUES (?, ?, ?)",
-                    (temp, hum, lux)
-                )
-                print(f"📝 Saved Sensor Data: T={temp}°C, H={hum}%, L={lux}")
+            cursor.execute(
+                "INSERT INTO measurements (temperature, humidity, luminosity) VALUES (?, ?, ?)",
+                (temp, hum, lux)
+            )
+            print(f"📝 Saved Sensor Data: T={temp}°C, H={hum}%, L={lux}")
 
         # 2. Handle ESP32 Data (Motion)
         elif topic == TOPIC_MOTION:

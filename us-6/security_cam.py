@@ -16,10 +16,10 @@ if not os.path.exists(PHOTO_DIR):
 # Callback triggered when a message is received
 def on_message(client, userdata, msg):
     try:
-        payload = msg.payload.decode()
+        data = json.loads(msg.payload.decode())
+        status = data.get("status")
         
-        # # Check if status is ALERT (matching the ESP32 message)
-        if payload == "ALERTE":
+        if status in ["ALERTE", "ALERT"]:
             print(f"🚨 Motion detected!")
             take_photo()
 
