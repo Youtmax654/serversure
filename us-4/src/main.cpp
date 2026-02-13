@@ -98,6 +98,18 @@ void reconnect()
   }
 }
 
+const double k = 5.0 / 1024;
+const double R2 = 10000;
+const double B = 1.3 * pow(10.0, 7);
+const double m = -1.4;
+
+double light_intensity(int RawADC0) {
+  double V2 = k * RawADC0;
+  double R1 = (5.0 / V2 - 1) * R2;
+  double lux = B * pow(R1, m);
+  return lux;
+}
+
 void loop()
 {
   // 1. Gestion de la connexion MQTT
@@ -117,9 +129,7 @@ void loop()
 
     // Read LDR value and convert to lux
     int ldrValue = analogRead(LDRPIN);
-    // Calibrate these values based on your LDR and lighting conditions
-    // Typical: dark = ~1023, bright = ~0 (inverse relationship)
-    int lightLux = map(ldrValue, 0, 1023, 0, 10000); // maps to 0-10000 lux
+    int lightLux = light_intensity(ldrValue);
 
     // Lecture du capteur
     if (!dht.readTempAndHumidity(temp_hum_val))

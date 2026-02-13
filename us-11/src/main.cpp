@@ -88,6 +88,18 @@ void setup() {
   lcd.clear();
 }
 
+const double k = 5.0 / 1024;
+const double R2 = 10000;
+const double B = 1.3 * pow(10.0, 7);
+const double m = -1.4;
+
+double light_intensity(int RawADC0) {
+  double V2 = k * RawADC0;
+  double R1 = (5.0 / V2 - 1) * R2;
+  double lux = B * pow(R1, m);
+  return lux;
+}
+
 void loop() {
   if (!client.connected()) {
     reconnect();
@@ -102,7 +114,7 @@ void loop() {
     
     // --- LECTURE LUMIERE ---
     int ldrValue = analogRead(LDRPIN);
-    int lightLux = map(ldrValue, 0, 1023, 0, 10000);
+    int lightLux = light_intensity(ldrValue);
 
     if (!dht.readTempAndHumidity(temp_hum_val)) {
       float humidity = temp_hum_val[0];
