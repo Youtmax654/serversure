@@ -79,12 +79,12 @@ def on_message(client, userdata, msg):
             status = data.get("status")
             val = data.get("value")
             
-            if status == "ALERTE" or status == "ALERT": # Handle both FR/EN just in case
+            if status in ["ALERTE", "ALERT", "OK"]:
                 cursor.execute(
                     "INSERT INTO alerts (alert_type, value) VALUES (?, ?)",
                     (status, val)
                 )
-                print(f"🚨 Saved Alert: Distance={val}cm")
+                print(f"🚨 Saved Motion Status: {status} (Distance={val}cm)")
 
         conn.commit()
         conn.close()
